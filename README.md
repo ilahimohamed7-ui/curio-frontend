@@ -1,10 +1,10 @@
-# Curio – Deine Welt des Wissens
+# Curio
 
 [![CI & Deployment](https://github.com/ilahimohamed7-ui/curio-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/ilahimohamed7-ui/curio-frontend/actions/workflows/ci.yml)
 
 Curio ist ein personalisierter Wissens-Feed. Nutzer melden sich an, wählen ihre Interessen
 (Wissenschaft, Technologie, Psychologie) und bekommen kurze, spannende Wissensbeiträge passend
-zu diesen Themen angezeigt – täglich neu erzeugt mit KI.
+zu diesen Themen angezeigt. Neue Beiträge werden täglich mit KI erzeugt.
 
 **Live-Demo:** <https://ilahimohamed7-ui.github.io/curio-frontend/>
 **Architektur:** [docs/architecture.md](docs/architecture.md) · Entscheidungen in [docs/adr/](docs/adr/)
@@ -79,7 +79,7 @@ supabase/
 | `feature` | Anwendungsfall, steuert den Ablauf (Smart Components)     | ui, data, util     |
 | `ui`      | Wiederverwendbare Darstellungskomponenten                 | util               |
 | `data`    | Datenmodelle, Datenzugriff, State                         | util               |
-| `util`    | Technische Hilfsfunktionen                                | –                  |
+| `util`    | Technische Hilfsfunktionen                                | nichts             |
 
 Domänen greifen nicht direkt aufeinander zu; app-weite Dienste liegen in `core`.
 Alle Seiten werden per Lazy Loading erst bei Bedarf geladen.
