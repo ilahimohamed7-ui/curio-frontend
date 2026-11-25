@@ -1,0 +1,65 @@
+name: CI & Deployment
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Nur ein Deployment gleichzeitig; laufende Pull-Request-Builds werden ersetzt.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint, Tests & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Abhängigkeiten installieren
+        run: npm ci
+
+      - name: Lint (inkl. Architekturregeln mit Sheriff)
+        run: npm run lint
+
+      - name: Unit-Tests
+        run: npm test -- --watch=false
+
+      - name: Production-Build für GitHub Pages
+        run: npx ng build --base-href "/${{ github.event.repository.name }}/"
+
+      # GitHub Pages kennt kein SPA-Routing: Unbekannte Pfade (z. B. /home)
+      # liefern 404.html aus, die Angular dann wie index.html startet.
+      - name: SPA-Fallback anlegen
+        run: cp dist/curio-frontend/browser/index.html dist/curio-frontend/browser/404.html
+
+      - uses: actions/upload-pages-artifact@v4
+        if: github.event_name != 'pull_request'
+        with:
+          path: dist/curio-frontend/browser
+
+  deploy:
+    name: Deployment auf GitHub Pages
+    needs: quality
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

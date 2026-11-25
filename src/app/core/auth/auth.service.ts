@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { DOCUMENT, Injectable, computed, inject, signal } from '@angular/core';
 import type { User } from '@supabase/supabase-js';
 
 import { SUPABASE_CLIENT } from '../supabase/supabase.client';
@@ -15,6 +15,7 @@ const REQUEST_TIMEOUT_MS = 15_000;
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly supabase = inject(SUPABASE_CLIENT);
+  private readonly document = inject(DOCUMENT);
 
   private readonly currentUser = signal<User | null>(null);
 
@@ -31,8 +32,12 @@ export class AuthService {
   }
 
   async register(email: string, password: string) {
+    // Bestätigungslink führt zurück zur aktuellen Umgebung
+    // (lokal: http://localhost:4200/login, live: …/curio-frontend/login).
+    const emailRedirectTo = new URL('login', this.document.baseURI).href;
+
     const { data, error } = await this.withTimeout(
-      this.supabase.auth.signUp({ email, password })
+      this.supabase.auth.signUp({ email, password, options: { emailRedirectTo } })
     );
 
     if (error) throw error;
