@@ -5,6 +5,7 @@ import {
   InterestCategory,
   InterestService
 } from '../data/interest.service';
+import { INTEREST_CATEGORIES } from '../data/category';
 
 @Component({
   selector: 'app-interest-setup',
@@ -16,11 +17,7 @@ export class InterestSetup {
   private readonly interestService = inject(InterestService);
   private readonly router = inject(Router);
 
-  readonly categories: InterestCategory[] = [
-    'Wissenschaft',
-    'Technologie',
-    'Psychologie'
-  ];
+  readonly categories = INTEREST_CATEGORIES;
 
   readonly selectedInterests = signal<InterestCategory[]>([]);
   readonly loading = signal(false);

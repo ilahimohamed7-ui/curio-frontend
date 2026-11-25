@@ -1,53 +1,32 @@
+import { Injectable, inject } from '@angular/core';
+import { Observable, from, map } from 'rxjs';
 
-import { Injectable } from '@angular/core';
-import { from, map, Observable } from 'rxjs';
-
-import { supabase } from '../../../core/supabase/supabase.client';
-import { PostRepository } from './post.repository';
+import { SUPABASE_CLIENT } from '../../../core/supabase/supabase.client';
+import { ALL_CATEGORIES } from './category';
 import { Post } from './post.model';
+import { PostRepository } from './post.repository';
+
+const POST_COLUMNS =
+  'id, category, title, description, source, emoji, likes, comments, color';
 
 @Injectable()
 export class SupabasePostRepository extends PostRepository {
-  override getPosts(): Observable<Post[]> {
-    return from(
-      supabase
-        .from('posts')
-        .select(
-          'id, category, title, description, source, emoji, likes, comments, color'
-        )
-        .order('created_at', { ascending: false })
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) {
-          throw error;
-        }
+  private readonly supabase = inject(SUPABASE_CLIENT);
 
-        return (data ?? []) as Post[];
-      })
-    );
+  override getPosts(): Observable<Post[]> {
+    return this.getPostsByCategory(ALL_CATEGORIES);
   }
 
-  override getPostsByCategory(
-    category: string
-  ): Observable<Post[]> {
-    if (category === 'Alle') {
-      return this.getPosts();
+  override getPostsByCategory(category: string): Observable<Post[]> {
+    let query = this.supabase.from('posts').select(POST_COLUMNS);
+
+    if (category !== ALL_CATEGORIES) {
+      query = query.eq('category', category);
     }
 
-    return from(
-      supabase
-        .from('posts')
-        .select(
-          'id, category, title, description, source, emoji, likes, comments, color'
-        )
-        .eq('category', category)
-        .order('created_at', { ascending: false })
-    ).pipe(
+    return from(query.order('created_at', { ascending: false })).pipe(
       map(({ data, error }) => {
-        if (error) {
-          throw error;
-        }
-
+        if (error) throw error;
         return (data ?? []) as Post[];
       })
     );

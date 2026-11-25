@@ -1,5 +1,4 @@
-
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { Post } from './post.model';
@@ -7,9 +6,7 @@ import { PostRepository } from './post.repository';
 
 @Injectable({ providedIn: 'root' })
 export class FeedService {
-  constructor(
-    private readonly postRepository: PostRepository
-  ) {}
+  private readonly postRepository = inject(PostRepository);
 
   getPosts(): Observable<Post[]> {
     return this.postRepository.getPosts();

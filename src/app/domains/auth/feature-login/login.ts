@@ -3,7 +3,6 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../../../core/auth/auth.service';
-import { InterestService } from '../../feed/data/interest.service';
 
 /** Übersetzt bekannte Supabase-Fehler in verständliche deutsche Meldungen. */
 function toUserMessage(error: unknown): string {
@@ -45,7 +44,6 @@ function toUserMessage(error: unknown): string {
 export class Login {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
-  private readonly interestService = inject(InterestService);
 
   readonly isLogin = signal(true);
   readonly loading = signal(false);
@@ -80,7 +78,9 @@ export class Login {
     try {
       if (this.isLogin()) {
         await this.authService.login(email, this.password);
-        await this.router.navigate([await this.targetAfterLogin()]);
+        // Ob zuerst die Interessen-Auswahl nötig ist, entscheidet der
+        // onboardingCompleteGuard der Feed-Route.
+        await this.router.navigate(['/home']);
       } else {
         const { session } = await this.authService.register(email, this.password);
 
@@ -107,17 +107,6 @@ export class Login {
     this.isLogin.update(value => !value);
     this.message.set('');
     this.isError.set(false);
-  }
-
-  private async targetAfterLogin(): Promise<string> {
-    try {
-      const interests = await this.interestService.getInterests();
-      return interests.length === 0 ? '/interest-setup' : '/home';
-    } catch (error) {
-      // Interessen nicht ladbar: trotzdem zum Feed, dort erscheint ein Hinweis.
-      console.error('Interessen-Abfrage fehlgeschlagen:', error);
-      return '/home';
-    }
   }
 
   private showError(message: string): void {

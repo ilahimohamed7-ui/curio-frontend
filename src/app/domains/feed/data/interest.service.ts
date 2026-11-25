@@ -1,36 +1,18 @@
+import { Injectable, inject } from '@angular/core';
 
-import { inject, Injectable, InjectionToken } from '@angular/core';
-import { supabase } from '../../../core/supabase/supabase.client';
+import { SUPABASE_CLIENT } from '../../../core/supabase/supabase.client';
+import { InterestCategory, isInterestCategory } from './category';
 
-export const INTEREST_SUPABASE_CLIENT = new InjectionToken<typeof supabase>(
-  'INTEREST_SUPABASE_CLIENT',
-  {
-    providedIn: 'root',
-    factory: () => supabase
-  }
-);
+export type { InterestCategory } from './category';
 
-export type InterestCategory =
-  | 'Wissenschaft'
-  | 'Technologie'
-  | 'Psychologie';
-
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class InterestService {
-  private readonly supabaseClient = inject(INTEREST_SUPABASE_CLIENT);
-
-  private readonly categories: InterestCategory[] = [
-    'Wissenschaft',
-    'Technologie',
-    'Psychologie'
-  ];
+  private readonly supabase = inject(SUPABASE_CLIENT);
 
   async getInterests(): Promise<InterestCategory[]> {
     // Lokale Sitzung statt getUser(): spart eine Netzwerkanfrage pro Aufruf.
     const { data: sessionData, error: sessionError } =
-      await this.supabaseClient.auth.getSession();
+      await this.supabase.auth.getSession();
 
     if (sessionError) throw sessionError;
 
@@ -40,32 +22,26 @@ export class InterestService {
       throw new Error('Bitte melde dich zuerst an.');
     }
 
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('user_interests')
       .select('category')
       .eq('user_id', user.id);
 
     if (error) throw error;
 
-    return (data ?? []).map(
-      row => row.category as InterestCategory
-    );
+    return (data ?? [])
+      .map(row => row.category)
+      .filter(isInterestCategory);
   }
 
-  async saveInterests(
-    interests: InterestCategory[]
-  ): Promise<void> {
+  async saveInterests(interests: InterestCategory[]): Promise<void> {
     const uniqueInterests = [...new Set(interests)];
 
-    if (
-      uniqueInterests.some(
-        category => !this.categories.includes(category)
-      )
-    ) {
+    if (!uniqueInterests.every(isInterestCategory)) {
       throw new Error('Eine ausgewählte Kategorie ist ungültig.');
     }
 
-    const { error } = await this.supabaseClient.rpc('save_user_interests', {
+    const { error } = await this.supabase.rpc('save_user_interests', {
       p_categories: uniqueInterests
     });
 

@@ -1,13 +1,19 @@
-
+import { TestBed } from '@angular/core/testing';
 import { describe, it, expect } from 'vitest';
 import { firstValueFrom } from 'rxjs';
 
 import { FeedService } from './feed.service';
 import { InMemoryPostRepository } from './in-memory-post.repository';
+import { PostRepository } from './post.repository';
 
 describe('FeedService', () => {
-  const createService = () =>
-    new FeedService(new InMemoryPostRepository());
+  const createService = () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [{ provide: PostRepository, useClass: InMemoryPostRepository }]
+    });
+    return TestBed.inject(FeedService);
+  };
 
   it('sollte drei Beiträge zurückgeben', async () => {
     const service = createService();

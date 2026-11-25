@@ -1,10 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  InterestService,
-  INTEREST_SUPABASE_CLIENT
-} from './interest.service';
+import { InterestService } from './interest.service';
+import { SUPABASE_CLIENT } from '../../../core/supabase/supabase.client';
 
 describe('InterestService', () => {
   const mockRpc = vi.fn();
@@ -17,7 +15,7 @@ describe('InterestService', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: INTEREST_SUPABASE_CLIENT, useValue: mockSupabaseClient }
+        { provide: SUPABASE_CLIENT, useValue: mockSupabaseClient }
       ]
     });
     service = TestBed.inject(InterestService);

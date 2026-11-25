@@ -16,6 +16,12 @@ import {
   InterestCategory,
   InterestService
 } from '../data/interest.service';
+import {
+  ALL_CATEGORIES,
+  CATEGORY_FILTERS,
+  CategoryFilter,
+  INTEREST_CATEGORIES
+} from '../data/category';
 
 @Component({
   selector: 'app-feed-page',
@@ -30,17 +36,12 @@ export class FeedPage implements OnInit {
   private readonly router = inject(Router);
   private readonly interestService = inject(InterestService);
 
-  readonly categories = ['Alle', 'Wissenschaft', 'Technologie', 'Psychologie'];
-
-  readonly interestCategories: InterestCategory[] = [
-    'Wissenschaft',
-    'Technologie',
-    'Psychologie'
-  ];
+  readonly categories = CATEGORY_FILTERS;
+  readonly interestCategories = INTEREST_CATEGORIES;
 
   readonly posts$ = signal<Observable<Post[]>>(of([]));
   readonly postsError = signal(false);
-  readonly selectedCategory = signal('Alle');
+  readonly selectedCategory = signal<CategoryFilter>(ALL_CATEGORIES);
   readonly selectedInterests = signal<InterestCategory[]>([]);
   readonly interestsLoading = signal(true);
   readonly interestsSaving = signal(false);
@@ -80,7 +81,7 @@ export class FeedPage implements OnInit {
     }
   }
 
-  selectCategory(category: string): void {
+  selectCategory(category: CategoryFilter): void {
     this.selectedCategory.set(category);
     this.loadPosts();
   }
@@ -103,7 +104,7 @@ export class FeedPage implements OnInit {
     this.posts$.set(
       this.feedService.getPostsByCategory(category).pipe(
         map(posts =>
-          category !== 'Alle' || interests.length === 0
+          category !== ALL_CATEGORIES || interests.length === 0
             ? posts
             : posts.filter(post =>
                 interests.includes(post.category as InterestCategory)

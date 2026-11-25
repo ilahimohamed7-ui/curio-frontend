@@ -7,7 +7,6 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { PostRepository } from './domains/feed/data/post.repository';
-import { InMemoryPostRepository } from './domains/feed/data/in-memory-post.repository';
 import { SupabasePostRepository } from './domains/feed/data/supabase-post.repository';
 
 export const appConfig: ApplicationConfig = {

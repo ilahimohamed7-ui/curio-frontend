@@ -65,9 +65,9 @@ describe('authGuard', () => {
     expect(routes.find(route => route.path === 'login')?.canActivate).toBeUndefined();
 
     for (const path of ['home', 'interest-setup']) {
-      expect(routes.find(route => route.path === path)?.canActivate).toEqual([
+      expect(routes.find(route => route.path === path)?.canActivate?.[0]).toBe(
         authGuard
-      ]);
+      );
     }
   });
 });

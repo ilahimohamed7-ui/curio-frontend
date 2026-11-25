@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { authGuard } from './core/auth/auth.guard';
+import { onboardingCompleteGuard } from './domains/feed/feature-onboarding/onboarding.guard';
 
 export const routes: Routes = [
   {
@@ -21,7 +22,7 @@ export const routes: Routes = [
   {
     path: 'home',
     title: 'Dein Feed – Curio',
-    canActivate: [authGuard],
+    canActivate: [authGuard, onboardingCompleteGuard],
     loadComponent: () =>
       import('./domains/feed/feature-feed/feed-page').then(m => m.FeedPage)
   },
