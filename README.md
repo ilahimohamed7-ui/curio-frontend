@@ -1,10 +1,14 @@
 # Curio – Deine Welt des Wissens
 
+[![CI & Deployment](https://github.com/ilahimohamed7-ui/curio-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/ilahimohamed7-ui/curio-frontend/actions/workflows/ci.yml)
+
 Curio ist ein personalisierter Wissens-Feed. Nutzer melden sich an, wählen ihre Interessen
 (Wissenschaft, Technologie, Psychologie) und bekommen kurze, spannende Wissensbeiträge passend
-zu diesen Themen angezeigt.
+zu diesen Themen angezeigt – täglich neu erzeugt mit KI.
 
-> Screenshots und Live-Demo folgen.
+**Live-Demo:** <https://ilahimohamed7-ui.github.io/curio-frontend/>
+
+> Screenshots folgen.
 
 ## Funktionen
 
@@ -132,5 +136,5 @@ Interessen kann jeder Benutzer nur für sich selbst lesen und ändern.
 - [x] Vollständige Supabase-Migrationen inkl. Seed-Daten
 - [x] KI-generierte Beiträge über eine Supabase Edge Function
 - [x] ESLint und Architekturregeln mit Sheriff
-- [ ] CI-Pipeline (GitHub Actions)
-- [ ] Deployment mit Live-Demo
+- [x] CI-Pipeline (GitHub Actions): Lint, Tests, Build
+- [x] Automatisches Deployment auf GitHub Pages
