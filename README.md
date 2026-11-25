@@ -17,13 +17,13 @@ zu diesen Themen angezeigt.
 
 ## Tech-Stack
 
-| Bereich  | Technologie                                                  |
-| -------- | ------------------------------------------------------------ |
-| Frontend | Angular 21 (Standalone Components, Signals, zoneless)        |
+| Bereich  | Technologie                                                     |
+| -------- | --------------------------------------------------------------- |
+| Frontend | Angular 21 (Standalone Components, Signals, zoneless)           |
 | Backend  | Supabase (PostgreSQL, Auth, Row Level Security, Edge Functions) |
-| KI       | Google Gemini API (strukturierte JSON-Ausgabe)               |
-| Tests    | Vitest                                                       |
-| Qualität | ESLint (angular-eslint), Sheriff, Prettier                   |
+| KI       | Google Gemini API (strukturierte JSON-Ausgabe)                  |
+| Tests    | Vitest                                                          |
+| Qualität | ESLint (angular-eslint), Sheriff, Prettier                      |
 
 ## KI-generierte Beiträge
 
