@@ -14,10 +14,12 @@
 //   GEMINI_API_KEY      API-Schlüssel aus Google AI Studio
 //   CRON_SECRET         beliebige lange Zufallszeichenfolge
 // Optional:
-//   GEMINI_MODEL        Standard: gemini-flash-latest
-//   POSTS_PER_CATEGORY  Standard: 5
+//   GEMINI_MODEL           Standard: gemini-flash-latest
+//   GEMINI_FALLBACK_MODEL  Standard: gemini-flash-lite-latest
+//   POSTS_PER_CATEGORY     Standard: 5
 //
-// SUPABASE_URL und SUPABASE_SERVICE_ROLE_KEY stellt Supabase automatisch bereit.
+// SUPABASE_URL und SUPABASE_SECRET_KEYS stellt Supabase automatisch bereit
+// (Fallback für ältere Projekte: SUPABASE_SERVICE_ROLE_KEY).
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
@@ -40,15 +42,42 @@ interface GeneratedPost {
   emoji: string;
 }
 
+/** Relevanter Ausschnitt der Antwort von generateContent. */
+interface GeminiResponse {
+  candidates?: { content?: { parts?: { text?: string }[] } }[];
+}
+
 const env = (name: string, fallback?: string): string => {
   const value = Deno.env.get(name) ?? fallback;
   if (!value) throw new Error(`Secret ${name} fehlt.`);
   return value;
 };
 
-const supabase = createClient(env('SUPABASE_URL'), env('SUPABASE_SERVICE_ROLE_KEY'), {
+/**
+ * Server-Schlüssel mit Schreibrechten. Bevorzugt die neuen Secret Keys
+ * (JSON-Objekt, z. B. {"default": "sb_secret_..."}), sonst den alten
+ * Service-Role-Key.
+ */
+function serverKey(): string {
+  try {
+    const keys = JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') ?? '{}') as Record<string, string>;
+    const key = keys['default'] ?? Object.values(keys)[0];
+    if (key) return key;
+  } catch {
+    // ungültiges JSON → Fallback
+  }
+  return env('SUPABASE_SERVICE_ROLE_KEY');
+}
+
+const supabase = createClient(env('SUPABASE_URL'), serverKey(), {
   auth: { persistSession: false }
 });
+
+/** Statuscodes, bei denen sich ein erneuter Versuch lohnt. */
+const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
+const MAX_ATTEMPTS_PER_MODEL = 3;
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -140,43 +169,28 @@ async function askGemini(
       : ''
   ].join('\n');
 
-  const model = env('GEMINI_MODEL', 'gemini-flash-latest');
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': env('GEMINI_API_KEY')
-      },
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.9,
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: 'ARRAY',
-            items: {
-              type: 'OBJECT',
-              properties: {
-                title: { type: 'STRING' },
-                description: { type: 'STRING' },
-                source: { type: 'STRING' },
-                emoji: { type: 'STRING' }
-              },
-              required: ['title', 'description', 'source', 'emoji']
-            }
-          }
+  const body = JSON.stringify({
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    generationConfig: {
+      temperature: 0.9,
+      responseMimeType: 'application/json',
+      responseSchema: {
+        type: 'ARRAY',
+        items: {
+          type: 'OBJECT',
+          properties: {
+            title: { type: 'STRING' },
+            description: { type: 'STRING' },
+            source: { type: 'STRING' },
+            emoji: { type: 'STRING' }
+          },
+          required: ['title', 'description', 'source', 'emoji']
         }
-      })
+      }
     }
-  );
+  });
 
-  if (!response.ok) {
-    throw new Error(`Gemini antwortete mit ${response.status}: ${await response.text()}`);
-  }
-
-  const data = await response.json();
+  const data = await callGeminiWithRetry(body);
   const text: string | undefined = data?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text) throw new Error('Leere Antwort von Gemini.');
 
@@ -185,6 +199,51 @@ async function askGemini(
 
   const known = new Set(avoidTitles.map(t => t.toLowerCase()));
   return parsed.filter(isValidPost).filter(post => !known.has(post.title.toLowerCase()));
+}
+
+/**
+ * Ruft Gemini robust auf: Bei Überlastung (429/5xx) wird mit wachsender
+ * Wartezeit erneut versucht (1 s, 2 s, 4 s). Bleibt das Hauptmodell
+ * überlastet, wird auf ein Ersatzmodell ausgewichen.
+ */
+async function callGeminiWithRetry(body: string): Promise<GeminiResponse> {
+  const models = [
+    env('GEMINI_MODEL', 'gemini-flash-latest'),
+    env('GEMINI_FALLBACK_MODEL', 'gemini-flash-lite-latest')
+  ];
+  let lastError = '';
+
+  for (const model of models) {
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS_PER_MODEL; attempt++) {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': env('GEMINI_API_KEY')
+          },
+          body
+        }
+      );
+
+      if (response.ok) return (await response.json()) as GeminiResponse;
+
+      lastError = `${model} antwortete mit ${response.status}: ${await response.text()}`;
+
+      if (!RETRYABLE_STATUS.has(response.status)) {
+        // z. B. 400 (ungültige Anfrage) oder 403 (Schlüssel): Wiederholen hilft nicht.
+        throw new Error(lastError);
+      }
+
+      console.warn(`Versuch ${attempt} fehlgeschlagen: ${lastError}`);
+      if (attempt < MAX_ATTEMPTS_PER_MODEL) {
+        await sleep(1000 * 2 ** (attempt - 1));
+      }
+    }
+  }
+
+  throw new Error(`Gemini ist derzeit nicht erreichbar. Letzter Fehler: ${lastError}`);
 }
 
 /** Prüft die KI-Antwort, bevor sie in die Datenbank geschrieben wird. */
