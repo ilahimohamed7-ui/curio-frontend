@@ -25,19 +25,33 @@ zu diesen Themen angezeigt.
 
 ## Projektstruktur
 
+Die Struktur folgt einem domänenorientierten Ansatz: Code wird nach Fachbereich
+(Domain) gruppiert und innerhalb jeder Domain in Schichten aufgeteilt.
+
 ```text
 src/app/
-├── core/
-│   ├── auth/            # Login/Registrierung, AuthService, Auth-Guard
-│   └── supabase.client.ts
-└── feed/
-    ├── components/      # Feed-Liste, Interessen-Auswahl
-    ├── data-access/     # Repository-Schicht (Supabase + In-Memory)
-    ├── models/          # Datenmodelle
-    └── services/        # Feed- und Interessen-Logik
+├── core/                        # App-weite Singletons
+│   ├── auth/                    # AuthService, Auth-Guard
+│   └── supabase/                # Supabase-Client
+└── domains/
+    ├── auth/
+    │   └── feature-login/       # Login und Registrierung
+    └── feed/
+        ├── feature-feed/        # Feed-Seite
+        ├── feature-onboarding/  # Interessen-Auswahl nach dem ersten Login
+        └── data/                # Modelle, Repositories, Services
 supabase/
-└── migrations/          # SQL-Migrationen
+└── migrations/                  # SQL-Migrationen
 ```
+
+| Schicht   | Aufgabe                                                   | Darf zugreifen auf |
+| --------- | --------------------------------------------------------- | ------------------ |
+| `feature` | Anwendungsfall, steuert den Ablauf (Smart Components)     | ui, data, util     |
+| `ui`      | Wiederverwendbare Darstellungskomponenten                 | util               |
+| `data`    | Datenmodelle, Datenzugriff, State                         | util               |
+| `util`    | Technische Hilfsfunktionen                                | –                  |
+
+Alle Seiten werden per Lazy Loading erst bei Bedarf geladen.
 
 Der Datenzugriff läuft über eine abstrakte `PostRepository`-Klasse. Die Supabase-Implementierung
 lässt sich für Tests oder lokale Entwicklung durch eine In-Memory-Variante ersetzen.

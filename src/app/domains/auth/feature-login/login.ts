@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
-import { AuthService } from './auth.service';
-import { InterestService } from '../../feed/services/interest.service';
+import { AuthService } from '../../../core/auth/auth.service';
+import { InterestService } from '../../feed/data/interest.service';
 
 /** Übersetzt bekannte Supabase-Fehler in verständliche deutsche Meldungen. */
 function toUserMessage(error: unknown): string {
@@ -36,13 +36,13 @@ function toUserMessage(error: unknown): string {
 }
 
 @Component({
-  selector: 'app-auth',
+  selector: 'app-login',
   imports: [FormsModule],
-  templateUrl: './auth.html',
-  styleUrl: './auth.css',
+  templateUrl: './login.html',
+  styleUrl: './login.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class Auth {
+export class Login {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly interestService = inject(InterestService);

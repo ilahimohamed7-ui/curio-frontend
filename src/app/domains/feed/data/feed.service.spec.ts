@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { firstValueFrom } from 'rxjs';
 
 import { FeedService } from './feed.service';
-import { InMemoryPostRepository } from '../data-access/in-memory-post.repository';
+import { InMemoryPostRepository } from './in-memory-post.repository';
 
 describe('FeedService', () => {
   const createService = () =>

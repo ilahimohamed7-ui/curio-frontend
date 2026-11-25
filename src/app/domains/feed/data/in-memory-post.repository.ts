@@ -4,7 +4,7 @@ import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { PostRepository } from './post.repository';
-import { Post } from '../models/post.model';
+import { Post } from './post.model';
 
 @Injectable()
 export class InMemoryPostRepository extends PostRepository {

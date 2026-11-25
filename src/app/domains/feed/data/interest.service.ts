@@ -1,6 +1,6 @@
 
 import { inject, Injectable, InjectionToken } from '@angular/core';
-import { supabase } from '../../core/supabase.client';
+import { supabase } from '../../../core/supabase/supabase.client';
 
 export const INTEREST_SUPABASE_CLIENT = new InjectionToken<typeof supabase>(
   'INTEREST_SUPABASE_CLIENT',

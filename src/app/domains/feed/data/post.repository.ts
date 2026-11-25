@@ -1,7 +1,7 @@
 
 import { Observable } from 'rxjs';
 
-import { Post } from '../models/post.model';
+import { Post } from './post.model';
 
 export abstract class PostRepository {
   abstract getPosts(): Observable<Post[]>;

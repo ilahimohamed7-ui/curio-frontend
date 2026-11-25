@@ -2,14 +2,14 @@ import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { of } from 'rxjs';
 
-import { FeedList } from './feed-list';
-import { PostRepository } from '../../data-access/post.repository';
-import { Post } from '../../models/post.model';
+import { FeedPage } from './feed-page';
+import { PostRepository } from '../data/post.repository';
+import { Post } from '../data/post.model';
 import { AuthService } from '../../../core/auth/auth.service';
-import { InterestService } from '../../services/interest.service';
+import { InterestService } from '../data/interest.service';
 import { Router } from '@angular/router';
 
-describe('FeedList', () => {
+describe('FeedPage', () => {
   const samplePosts: Post[] = [
     {
       id: '1',
@@ -67,7 +67,7 @@ describe('FeedList', () => {
     vi.clearAllMocks();
 
     await TestBed.configureTestingModule({
-      imports: [FeedList],
+      imports: [FeedPage],
       providers: [
         { provide: PostRepository, useValue: mockRepository },
         { provide: AuthService, useValue: mockAuthService },
@@ -78,7 +78,7 @@ describe('FeedList', () => {
   });
 
   async function createFeed() {
-    const fixture = TestBed.createComponent(FeedList);
+    const fixture = TestBed.createComponent(FeedPage);
     fixture.componentInstance.selectCategory('Alle');
     fixture.detectChanges(false);
     return fixture;

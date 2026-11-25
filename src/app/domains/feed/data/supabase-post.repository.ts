@@ -2,9 +2,9 @@
 import { Injectable } from '@angular/core';
 import { from, map, Observable } from 'rxjs';
 
-import { supabase } from '../../core/supabase.client';
+import { supabase } from '../../../core/supabase/supabase.client';
 import { PostRepository } from './post.repository';
-import { Post } from '../models/post.model';
+import { Post } from './post.model';
 
 @Injectable()
 export class SupabasePostRepository extends PostRepository {

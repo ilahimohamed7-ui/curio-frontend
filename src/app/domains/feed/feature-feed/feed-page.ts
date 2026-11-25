@@ -9,22 +9,22 @@ import { AsyncPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { Observable, catchError, map, of } from 'rxjs';
 
-import { FeedService } from '../../services/feed.service';
-import { Post } from '../../models/post.model';
+import { FeedService } from '../data/feed.service';
+import { Post } from '../data/post.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import {
   InterestCategory,
   InterestService
-} from '../../services/interest.service';
+} from '../data/interest.service';
 
 @Component({
-  selector: 'app-feed-list',
+  selector: 'app-feed-page',
   imports: [AsyncPipe],
-  templateUrl: './feed-list.html',
-  styleUrl: './feed-list.css',
+  templateUrl: './feed-page.html',
+  styleUrl: './feed-page.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FeedList implements OnInit {
+export class FeedPage implements OnInit {
   private readonly feedService = inject(FeedService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);

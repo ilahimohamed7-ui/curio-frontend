@@ -1,30 +1,34 @@
-
 import { Routes } from '@angular/router';
-import { Auth } from './core/auth/auth';
+
 import { authGuard } from './core/auth/auth.guard';
-import { InterestSetup } from './feed/components/interest-setup/interest-setup';
 
 export const routes: Routes = [
   {
     path: 'login',
-    component: Auth
+    title: 'Anmelden – Curio',
+    loadComponent: () =>
+      import('./domains/auth/feature-login/login').then(m => m.Login)
+  },
+  {
+    path: 'interest-setup',
+    title: 'Interessen wählen – Curio',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./domains/feed/feature-onboarding/interest-setup').then(
+        m => m.InterestSetup
+      )
   },
   {
     path: 'home',
+    title: 'Dein Feed – Curio',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./feed/components/feed-list/feed-list')
-        .then(m => m.FeedList)
+      import('./domains/feed/feature-feed/feed-page').then(m => m.FeedPage)
   },
   {
     path: '',
     redirectTo: 'login',
     pathMatch: 'full'
-  },
-  {
-    path: 'interest-setup',
-    component: InterestSetup,
-    canActivate: [authGuard]
   },
   {
     path: '**',

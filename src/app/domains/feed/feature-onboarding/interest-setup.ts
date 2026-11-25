@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import {
   InterestCategory,
   InterestService
-} from '../../services/interest.service';
+} from '../data/interest.service';
 
 @Component({
   selector: 'app-interest-setup',
