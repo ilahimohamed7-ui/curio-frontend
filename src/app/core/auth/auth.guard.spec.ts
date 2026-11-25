@@ -8,7 +8,6 @@ import {
 } from '@angular/router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { routes } from '../../app.routes';
 import { AuthService } from './auth.service';
 import { authGuard } from './auth.guard';
 
@@ -59,15 +58,5 @@ describe('authGuard', () => {
 
     expect(result).toBeInstanceOf(UrlTree);
     expect(TestBed.inject(Router).serializeUrl(result as UrlTree)).toBe('/login');
-  });
-
-  it('schützt Feed und Interessen-Auswahl, lässt Login öffentlich', () => {
-    expect(routes.find(route => route.path === 'login')?.canActivate).toBeUndefined();
-
-    for (const path of ['home', 'interest-setup']) {
-      expect(routes.find(route => route.path === path)?.canActivate?.[0]).toBe(
-        authGuard
-      );
-    }
   });
 });

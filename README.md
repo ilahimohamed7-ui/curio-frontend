@@ -21,7 +21,7 @@ zu diesen Themen angezeigt.
 | Frontend | Angular 21 (Standalone Components), TypeScript  |
 | Backend  | Supabase (PostgreSQL, Auth, Row Level Security) |
 | Tests    | Vitest                                          |
-| Format   | Prettier                                        |
+| Qualität | ESLint (angular-eslint), Sheriff, Prettier       |
 
 ## Projektstruktur
 
@@ -52,7 +52,12 @@ supabase/
 | `data`    | Datenmodelle, Datenzugriff, State                         | util               |
 | `util`    | Technische Hilfsfunktionen                                | –                  |
 
+Domänen greifen nicht direkt aufeinander zu; app-weite Dienste liegen in `core`.
 Alle Seiten werden per Lazy Loading erst bei Bedarf geladen.
+
+Diese Regeln werden automatisch mit [Sheriff](https://github.com/softarc-consulting/sheriff)
+geprüft (`sheriff.config.ts`). Ein Verstoß, etwa ein Import von `ui` in `data` oder von
+der Auth- in die Feed-Domäne, führt bei `npm run lint` zu einem Fehler.
 
 Der Datenzugriff läuft über eine abstrakte `PostRepository`-Klasse. Die Supabase-Implementierung
 lässt sich für Tests oder lokale Entwicklung durch eine In-Memory-Variante ersetzen.
@@ -79,11 +84,13 @@ vorgesehen; der Datenschutz erfolgt über Row Level Security in der Datenbank.
 | `npm start`     | Entwicklungsserver starten          |
 | `npm run build` | Production-Build nach `dist/`       |
 | `npm test`      | Unit-Tests mit Vitest ausführen     |
+| `npm run lint`  | ESLint inkl. Architekturregeln      |
 
 ## Roadmap
 
-- [ ] Design-System mit CSS-Variablen und barrierefreien Fokus-Styles
-- [ ] Umstellung auf Signals, OnPush und Reactive Forms
+- [x] Design-System mit CSS-Variablen und barrierefreien Fokus-Styles
+- [x] Umstellung auf Signals, OnPush, Resource-API und Reactive Forms
 - [ ] Vollständige Supabase-Migrationen inkl. Seed-Daten
-- [ ] ESLint und CI-Pipeline (GitHub Actions)
+- [x] ESLint und Architekturregeln mit Sheriff
+- [ ] CI-Pipeline (GitHub Actions)
 - [ ] Deployment mit Live-Demo
