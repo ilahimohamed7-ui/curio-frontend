@@ -75,7 +75,9 @@ const supabase = createClient(env('SUPABASE_URL'), serverKey(), {
 
 /** Statuscodes, bei denen sich ein erneuter Versuch lohnt. */
 const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
-const MAX_ATTEMPTS_PER_MODEL = 3;
+const MAX_ATTEMPTS_PER_MODEL = 2;
+/** Abbruch einer einzelnen Gemini-Anfrage, damit das Laufzeitlimit hält. */
+const REQUEST_TIMEOUT_MS = 30_000;
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -91,16 +93,24 @@ Deno.serve(async request => {
   }
 
   const force = new URL(request.url).searchParams.get('force') === 'true';
-  const results: Record<string, string> = {};
 
-  for (const category of CATEGORIES) {
-    try {
-      results[category] = await generateForCategory(category, force);
-    } catch (error) {
-      console.error(`Fehler bei ${category}:`, error);
-      results[category] = `Fehler: ${error instanceof Error ? error.message : String(error)}`;
+  // Kategorien parallel verarbeiten: Die Gesamtdauer entspricht der
+  // langsamsten Kategorie statt der Summe (wichtig für das Laufzeitlimit).
+  const settled = await Promise.allSettled(
+    CATEGORIES.map(category => generateForCategory(category, force))
+  );
+
+  const results: Record<string, string> = {};
+  settled.forEach((outcome, index) => {
+    const category = CATEGORIES[index];
+    if (outcome.status === 'fulfilled') {
+      results[category] = outcome.value;
+    } else {
+      console.error(`Fehler bei ${category}:`, outcome.reason);
+      const reason = outcome.reason;
+      results[category] = `Fehler: ${reason instanceof Error ? reason.message : String(reason)}`;
     }
-  }
+  });
 
   return json({ results });
 });
@@ -202,8 +212,8 @@ async function askGemini(
 }
 
 /**
- * Ruft Gemini robust auf: Bei Überlastung (429/5xx) wird mit wachsender
- * Wartezeit erneut versucht (1 s, 2 s, 4 s). Bleibt das Hauptmodell
+ * Ruft Gemini robust auf: Bei Überlastung (429/5xx) oder Zeitüberschreitung
+ * wird nach kurzer Wartezeit erneut versucht. Bleibt das Hauptmodell
  * überlastet, wird auf ein Ersatzmodell ausgewichen.
  */
 async function callGeminiWithRetry(body: string): Promise<GeminiResponse> {
@@ -223,9 +233,14 @@ async function callGeminiWithRetry(body: string): Promise<GeminiResponse> {
             'Content-Type': 'application/json',
             'x-goog-api-key': env('GEMINI_API_KEY')
           },
-          body
+          body,
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
         }
-      );
+      ).catch((error: unknown) => {
+        // Zeitüberschreitung oder Netzwerkfehler wie eine Überlastung behandeln.
+        console.warn(`${model}: Anfrage abgebrochen`, error);
+        return new Response(String(error), { status: 504 });
+      });
 
       if (response.ok) return (await response.json()) as GeminiResponse;
 
