@@ -13,15 +13,35 @@ zu diesen Themen angezeigt.
 - Onboarding: Auswahl der Interessen beim ersten Login
 - Wissens-Feed mit Kategorie-Filter, gefiltert nach den eigenen Interessen
 - Interessen jederzeit im Feed änderbar, serverseitig validiert gespeichert
+- **Täglich neue, KI-generierte Beiträge** pro Kategorie (Google Gemini), gekennzeichnet als „KI-generiert“
 
 ## Tech-Stack
 
-| Bereich  | Technologie                                     |
-| -------- | ----------------------------------------------- |
-| Frontend | Angular 21 (Standalone Components), TypeScript  |
-| Backend  | Supabase (PostgreSQL, Auth, Row Level Security) |
-| Tests    | Vitest                                          |
-| Qualität | ESLint (angular-eslint), Sheriff, Prettier       |
+| Bereich  | Technologie                                                  |
+| -------- | ------------------------------------------------------------ |
+| Frontend | Angular 21 (Standalone Components, Signals, zoneless)        |
+| Backend  | Supabase (PostgreSQL, Auth, Row Level Security, Edge Functions) |
+| KI       | Google Gemini API (strukturierte JSON-Ausgabe)               |
+| Tests    | Vitest                                                       |
+| Qualität | ESLint (angular-eslint), Sheriff, Prettier                   |
+
+## KI-generierte Beiträge
+
+```text
+pg_cron (täglich 05:00 UTC)
+  └─▶ Edge Function generate-daily-posts   ← hält GEMINI_API_KEY serverseitig
+        ├─▶ Gemini API: N neue Fakten pro Kategorie (JSON-Schema)
+        └─▶ Tabelle posts (ai_generated = true)
+                └─▶ Angular-Feed liest wie gewohnt über das PostRepository
+```
+
+- Der API-Schlüssel liegt ausschließlich als Secret in Supabase, nie im Frontend.
+- Beiträge werden **pro Kategorie** statt pro Nutzer erzeugt: Die Kosten bleiben unabhängig
+  von der Nutzerzahl konstant, und der Feed lädt ohne Wartezeit.
+- Die Funktion schickt die Titel der letzten Beiträge mit, um Wiederholungen zu vermeiden,
+  und prüft jede KI-Antwort, bevor sie gespeichert wird.
+- Pro Kategorie und Tag wird höchstens einmal erzeugt (idempotent).
+- Durch das Repository-Pattern musste das Frontend dafür kaum angepasst werden.
 
 ## Projektstruktur
 
@@ -87,6 +107,7 @@ Für ein neues Supabase-Projekt die Dateien im **SQL Editor** in dieser Reihenfo
 | `20261020000000_initial_schema.sql`             | Tabellen `posts` und `user_interests`, RLS     |
 | `20261106000000_save_user_interests.sql`        | Funktion zum atomaren Speichern der Interessen |
 | `20261125000000_user_interests_constraints.sql` | Zugriffsregeln (Policies) für `user_interests` |
+| `20261126000000_ai_generated_posts.sql`         | Spalte `ai_generated`, täglicher Cron-Job      |
 | `supabase/seed.sql`                             | Beispiel-Beiträge (nur bei leerer Tabelle)     |
 
 Alle Skripte sind idempotent und können gefahrlos mehrfach ausgeführt werden.
@@ -109,7 +130,7 @@ Interessen kann jeder Benutzer nur für sich selbst lesen und ändern.
 - [x] Design-System mit CSS-Variablen und barrierefreien Fokus-Styles
 - [x] Umstellung auf Signals, OnPush, Resource-API und Reactive Forms
 - [x] Vollständige Supabase-Migrationen inkl. Seed-Daten
-- [ ] KI-generierte Beiträge über eine Supabase Edge Function
+- [x] KI-generierte Beiträge über eine Supabase Edge Function
 - [x] ESLint und Architekturregeln mit Sheriff
 - [ ] CI-Pipeline (GitHub Actions)
 - [ ] Deployment mit Live-Demo

@@ -7,7 +7,22 @@ import { Post } from './post.model';
 import { PostRepository } from './post.repository';
 
 const POST_COLUMNS =
-  'id, category, title, description, source, emoji, likes, comments, color';
+  'id, category, title, description, source, emoji, likes, comments, color, created_at, ai_generated';
+
+/** Maximale Anzahl Beiträge pro Abfrage (neueste zuerst). */
+const FEED_LIMIT = 60;
+
+/** Zeile, wie sie aus der Tabelle `posts` kommt (snake_case). */
+interface PostRow extends Omit<Post, 'createdAt' | 'aiGenerated'> {
+  created_at: string;
+  ai_generated: boolean;
+}
+
+const toPost = ({ created_at, ai_generated, ...rest }: PostRow): Post => ({
+  ...rest,
+  createdAt: created_at,
+  aiGenerated: ai_generated
+});
 
 @Injectable()
 export class SupabasePostRepository extends PostRepository {
@@ -24,10 +39,12 @@ export class SupabasePostRepository extends PostRepository {
       query = query.eq('category', category);
     }
 
-    return from(query.order('created_at', { ascending: false })).pipe(
+    return from(
+      query.order('created_at', { ascending: false }).limit(FEED_LIMIT)
+    ).pipe(
       map(({ data, error }) => {
         if (error) throw error;
-        return (data ?? []) as Post[];
+        return ((data ?? []) as PostRow[]).map(toPost);
       })
     );
   }

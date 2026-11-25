@@ -20,7 +20,9 @@ describe('FeedPage', () => {
       emoji: '🪐',
       likes: 248,
       comments: 32,
-      color: 'purple'
+      color: 'purple',
+      createdAt: '2026-11-01T08:00:00Z',
+      aiGenerated: false
     },
     {
       id: '2',
@@ -31,7 +33,9 @@ describe('FeedPage', () => {
       emoji: '🤖',
       likes: 312,
       comments: 47,
-      color: 'orange'
+      color: 'orange',
+      createdAt: '2026-11-01T08:00:00Z',
+      aiGenerated: false
     },
     {
       id: '3',
@@ -42,7 +46,9 @@ describe('FeedPage', () => {
       emoji: '🧠',
       likes: 186,
       comments: 24,
-      color: 'blue'
+      color: 'blue',
+      createdAt: '2026-11-01T08:00:00Z',
+      aiGenerated: false
     }
   ];
 

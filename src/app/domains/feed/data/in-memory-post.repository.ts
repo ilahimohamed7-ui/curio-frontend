@@ -19,7 +19,9 @@ export class InMemoryPostRepository extends PostRepository {
       emoji: '🪐',
       likes: 248,
       comments: 32,
-      color: 'purple'
+      color: 'purple',
+      createdAt: '2026-11-01T08:00:00Z',
+      aiGenerated: false
     },
     {
       id: '2',
@@ -31,7 +33,9 @@ export class InMemoryPostRepository extends PostRepository {
       emoji: '🧠',
       likes: 186,
       comments: 24,
-      color: 'blue'
+      color: 'blue',
+      createdAt: '2026-11-01T08:00:00Z',
+      aiGenerated: false
     },
     {
       id: '3',
@@ -43,7 +47,9 @@ export class InMemoryPostRepository extends PostRepository {
       emoji: '🤖',
       likes: 312,
       comments: 47,
-      color: 'orange'
+      color: 'orange',
+      createdAt: '2026-11-01T08:00:00Z',
+      aiGenerated: false
     }
   ];
 

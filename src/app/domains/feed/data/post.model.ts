@@ -1,4 +1,3 @@
-
 export interface Post {
   id: string;
   category: string;
@@ -9,4 +8,8 @@ export interface Post {
   likes: number;
   comments: number;
   color: 'purple' | 'blue' | 'orange';
+  /** Erstellungszeitpunkt als ISO-String. */
+  createdAt: string;
+  /** `true`, wenn der Beitrag von der KI (Gemini) erzeugt wurde. */
+  aiGenerated: boolean;
 }

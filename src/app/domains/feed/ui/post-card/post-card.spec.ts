@@ -14,15 +14,32 @@ describe('PostCard', () => {
     emoji: '🪐',
     likes: 248,
     comments: 32,
-    color: 'blue'
+    color: 'blue',
+    createdAt: '2026-11-01T08:00:00Z',
+    aiGenerated: false
   };
 
-  function render() {
+  function render(overrides: Partial<Post> = {}, now = Date.parse('2026-11-20T12:00:00Z')) {
     const fixture = TestBed.createComponent(PostCard);
-    fixture.componentRef.setInput('post', post);
+    fixture.componentRef.setInput('post', { ...post, ...overrides });
+    fixture.componentRef.setInput('now', now);
     fixture.detectChanges();
     return fixture.nativeElement as HTMLElement;
   }
+
+  it('zeigt "Neu" nur für Beiträge der letzten 24 Stunden', () => {
+    expect(render().querySelector('.badge-new')).toBeNull();
+    expect(
+      render({ createdAt: '2026-11-20T06:00:00Z' }).querySelector('.badge-new')
+    ).toBeTruthy();
+  });
+
+  it('kennzeichnet KI-generierte Beiträge', () => {
+    expect(render().querySelector('.badge-ai')).toBeNull();
+    expect(render({ aiGenerated: true }).querySelector('.badge-ai')?.textContent).toContain(
+      'KI-generiert'
+    );
+  });
 
   it('zeigt Titel, Beschreibung, Kategorie und Quelle', () => {
     const element = render();

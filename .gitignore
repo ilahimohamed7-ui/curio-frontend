@@ -47,3 +47,7 @@ Thumbs.db
 *.vsix
 .env
 .env.*
+
+# Supabase CLI (lokal)
+supabase/.temp/
+supabase/.branches/

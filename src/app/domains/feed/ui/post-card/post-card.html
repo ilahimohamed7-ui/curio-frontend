@@ -4,6 +4,16 @@
   <div class="post-card-top">
     <span class="post-emoji" aria-hidden="true">{{ p.emoji }}</span>
     <span class="post-category">{{ p.category }}</span>
+    <span class="badges">
+      @if (isNew()) {
+        <span class="badge badge-new">Neu</span>
+      }
+      @if (p.aiGenerated) {
+        <span class="badge badge-ai" title="Dieser Beitrag wurde mit KI (Google Gemini) erstellt.">
+          KI-generiert
+        </span>
+      }
+    </span>
   </div>
 
   <h3>{{ p.title }}</h3>
