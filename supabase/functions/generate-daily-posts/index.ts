@@ -84,7 +84,7 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json' }
+    headers: { 'Content-Type': 'application/json; charset=utf-8' }
   });
 
 Deno.serve(async request => {
