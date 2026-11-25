@@ -1,6 +1,6 @@
-
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+
 import {
   InterestCategory,
   InterestService
@@ -8,49 +8,59 @@ import {
 
 @Component({
   selector: 'app-interest-setup',
-  standalone: true,
   templateUrl: './interest-setup.html',
-  styleUrl: './interest-setup.css'
+  styleUrl: './interest-setup.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InterestSetup {
+  private readonly interestService = inject(InterestService);
+  private readonly router = inject(Router);
+
   readonly categories: InterestCategory[] = [
     'Wissenschaft',
     'Technologie',
     'Psychologie'
   ];
 
-  selectedInterests: InterestCategory[] = [];
-  loading = false;
-  message = '';
-
-  constructor(
-    private readonly interestService: InterestService,
-    private readonly router: Router
-  ) {}
+  readonly selectedInterests = signal<InterestCategory[]>([]);
+  readonly loading = signal(false);
+  readonly message = signal('');
 
   toggleInterest(category: InterestCategory): void {
-    this.selectedInterests = this.selectedInterests.includes(category)
-      ? this.selectedInterests.filter(item => item !== category)
-      : [...this.selectedInterests, category];
+    this.selectedInterests.update(current =>
+      current.includes(category)
+        ? current.filter(item => item !== category)
+        : [...current, category]
+    );
   }
 
   async save(): Promise<void> {
-    if (this.selectedInterests.length === 0) {
-      this.message = 'Bitte wähle mindestens ein Interesse aus.';
+    if (this.loading()) {
       return;
     }
 
-    this.loading = true;
-    this.message = '';
+    if (this.selectedInterests().length === 0) {
+      this.message.set('Bitte wähle mindestens ein Interesse aus.');
+      return;
+    }
+
+    this.loading.set(true);
+    this.message.set('');
 
     try {
-      await this.interestService.saveInterests(this.selectedInterests);
+      await this.interestService.saveInterests(this.selectedInterests());
       await this.router.navigate(['/home']);
     } catch (error) {
       console.error('Interessen konnten nicht gespeichert werden:', error);
-      this.message = 'Speichern fehlgeschlagen. Bitte versuche es erneut.';
+      // Supabase liefert Fehler als einfache Objekte mit "message", nicht als Error.
+      const raw =
+        typeof error === 'object' && error !== null && 'message' in error
+          ? String(error.message)
+          : '';
+      const detail = raw ? ` (${raw})` : '';
+      this.message.set(`Speichern fehlgeschlagen. Bitte versuche es erneut.${detail}`);
     } finally {
-      this.loading = false;
+      this.loading.set(false);
     }
   }
 }

@@ -1,60 +1,63 @@
 <main class="feed-page">
   <header class="feed-header">
-    <a class="brand" href="/home" aria-label="Curio Startseite">curio<span>.</span></a>
-    <button class="logout-button" type="button" (click)="logout()">
+    <a class="brand" href="/home" aria-label="Curio Startseite">curio<span aria-hidden="true">.</span></a>
+    <button class="chip logout-button" type="button" (click)="logout()">
       Abmelden
     </button>
   </header>
 
   <section class="feed-intro" aria-labelledby="feed-title">
-    <p class="eyebrow">DEINE WELT DES WISSENS</p>
+    <p class="eyebrow">Deine Welt des Wissens</p>
     <h1 id="feed-title">Dein Feed. Dein Wissen.</h1>
     <p>Entdecke neue Gedanken und spannende Fakten aus deinen Lieblingsthemen.</p>
   </section>
 
-  <section class="interests-panel" aria-labelledby="interests-title">
+  <section class="interests-panel card" aria-labelledby="interests-title">
     <h2 id="interests-title">Deine Interessen</h2>
-    <p>Wähle aus, welche Themen du in deinem Feed entdecken möchtest.</p>
+    <p class="panel-text">Wähle aus, welche Themen du in deinem Feed entdecken möchtest.</p>
 
-    @if (interestsLoading) {
-      <p>Interessen werden geladen ...</p>
+    @if (interestsLoading()) {
+      <p class="panel-hint" role="status">Interessen werden geladen …</p>
     } @else {
-      <div class="interest-options">
+      <div class="chip-group" role="group" aria-labelledby="interests-title">
         @for (category of interestCategories; track category) {
           <button
             type="button"
-            [class.active]="selectedInterests.includes(category)"
-            [attr.aria-pressed]="selectedInterests.includes(category)"
-            [disabled]="interestsSaving"
+            class="chip"
+            [attr.aria-pressed]="selectedInterests().includes(category)"
+            [disabled]="interestsSaving()"
             (click)="toggleInterest(category)"
           >
-            {{ selectedInterests.includes(category) ? '✓ ' : '' }}{{ category }}
+            @if (selectedInterests().includes(category)) {
+              <span aria-hidden="true">✓ </span>
+            }
+            {{ category }}
           </button>
         }
       </div>
     }
 
-    @if (interestsSaving) {
-      <p>Interessen werden gespeichert ...</p>
+    @if (interestsSaving()) {
+      <p class="panel-hint" role="status">Interessen werden gespeichert …</p>
     }
 
-    @if (message) {
-      <p class="interests-message" role="status">{{ message }}</p>
+    @if (message()) {
+      <p class="status-message is-error panel-hint" role="alert">{{ message() }}</p>
     }
   </section>
 
   <section class="posts-section" aria-labelledby="posts-title">
     <div class="posts-heading">
       <div>
-        <p class="eyebrow">FÜR DICH ENTDECKT</p>
+        <p class="eyebrow">Für dich entdeckt</p>
         <h2 id="posts-title">Wissens-Feed</h2>
       </div>
-      <nav class="category-options" aria-label="Beiträge nach Kategorie filtern">
+      <nav class="category-options chip-group" aria-label="Beiträge nach Kategorie filtern">
         @for (category of categories; track category) {
           <button
             type="button"
-            [class.active]="selectedCategory === category"
-            [attr.aria-pressed]="selectedCategory === category"
+            class="chip"
+            [attr.aria-pressed]="selectedCategory() === category"
             (click)="selectCategory(category)"
           >
             {{ category }}
@@ -63,7 +66,7 @@
       </nav>
     </div>
 
-    @if (posts$ | async; as posts) {
+    @if (posts$() | async; as posts) {
       @if (posts.length > 0) {
         <div class="post-grid">
           @for (post of posts; track post.id) {
@@ -81,14 +84,26 @@
               <p class="post-description">{{ post.description }}</p>
               <footer class="post-meta">
                 <span class="post-source">{{ post.source }}</span>
-                <span class="post-engagement" aria-label="Reaktionen">
-                  <span aria-label="Gefällt-mir-Angaben">♥ {{ post.likes }}</span>
-                  <span aria-label="Kommentare">▢ {{ post.comments }}</span>
+                <span class="post-engagement">
+                  <span>
+                    <span aria-hidden="true">♥</span>
+                    <span class="visually-hidden">Gefällt-mir-Angaben:</span>
+                    {{ post.likes }}
+                  </span>
+                  <span>
+                    <span aria-hidden="true">▢</span>
+                    <span class="visually-hidden">Kommentare:</span>
+                    {{ post.comments }}
+                  </span>
                 </span>
               </footer>
             </article>
           }
         </div>
+      } @else if (postsError()) {
+        <p class="empty-state status-message is-error" role="alert">
+          Beiträge konnten nicht geladen werden. Bitte lade die Seite neu.
+        </p>
       } @else {
         <p class="empty-state">Für diese Auswahl gibt es noch keine Beiträge.</p>
       }

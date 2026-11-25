@@ -1,126 +1,55 @@
-
 :host {
   display: block;
-  min-height: 100vh;
 }
 
 .auth-page {
-  min-height: 100vh;
   display: grid;
+  min-height: 100dvh;
   place-items: center;
-  padding: 24px;
-  background:
-    radial-gradient(ellipse at top, #292044 0%, transparent 55%),
-    #101016;
-  color: #f7f5fc;
-  font-family: Arial, sans-serif;
+  padding: var(--space-6) var(--space-4);
+  background: radial-gradient(ellipse at top, #292044 0%, transparent 55%),
+    var(--color-bg);
 }
 
 .auth-card {
-  width: 100%;
-  max-width: 420px;
-  padding: 36px;
-  border: 1px solid #34313e;
-  border-radius: 22px;
-  background: #191820;
-}
-
-.brand {
-  color: #fff;
-  font-size: 32px;
-  font-weight: 800;
-  text-decoration: none;
-}
-
-.brand span {
-  color: #a78bfa;
+  max-width: 26.25rem;
+  background: var(--color-surface-raised);
+  border-color: #34313e;
 }
 
 .eyebrow {
-  margin-top: 30px;
-  color: #b6a0ff;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 2px;
+  margin-top: var(--space-8);
 }
 
 h1 {
-  margin-bottom: 10px;
-  font-size: 30px;
-  line-height: 1.2;
+  margin-top: var(--space-2);
+  font-size: var(--text-xl);
 }
 
 .subtitle {
-  margin-bottom: 28px;
-  color: #aaa7b5;
-  line-height: 1.6;
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
 }
 
 form {
   display: grid;
-  gap: 10px;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
 }
 
-label {
-  margin-top: 8px;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 13px 14px;
-  border: 1px solid #3b3847;
-  border-radius: 10px;
-  outline: none;
-  background: #111117;
-  color: #fff;
-  font: inherit;
-}
-
-input:focus {
-  border-color: #a78bfa;
-}
-
-form > button {
-  margin-top: 14px;
-  padding: 14px;
-  border: 0;
-  border-radius: 10px;
-  background: #a78bfa;
-  color: #171321;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-form > button:disabled {
-  cursor: wait;
-  opacity: 0.65;
-}
-
-.message {
-  color: #a7f3d0;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.message.error {
-  color: #fca5a5;
+.btn-primary {
+  margin-top: var(--space-2);
 }
 
 .switch-mode {
-  margin-top: 24px;
-  color: #aaa7b5;
+  margin-top: var(--space-6);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
   text-align: center;
-  font-size: 14px;
 }
 
-.text-button {
-  border: 0;
-  background: transparent;
-  color: #c4b5fd;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
+@media (max-width: 30rem) {
+  .auth-card {
+    padding: var(--space-6);
+  }
 }

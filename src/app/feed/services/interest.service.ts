@@ -28,12 +28,13 @@ export class InterestService {
   ];
 
   async getInterests(): Promise<InterestCategory[]> {
-    const { data: userData, error: userError } =
-      await this.supabaseClient.auth.getUser();
+    // Lokale Sitzung statt getUser(): spart eine Netzwerkanfrage pro Aufruf.
+    const { data: sessionData, error: sessionError } =
+      await this.supabaseClient.auth.getSession();
 
-    if (userError) throw userError;
+    if (sessionError) throw sessionError;
 
-    const user = userData.user;
+    const user = sessionData.session?.user;
 
     if (!user) {
       throw new Error('Bitte melde dich zuerst an.');

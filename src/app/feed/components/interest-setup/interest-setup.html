@@ -1,36 +1,40 @@
-
 <main class="interest-page">
-  <section class="interest-card">
-    <p class="eyebrow">WILLKOMMEN BEI CURIO</p>
-    <h1>Was interessiert dich?</h1>
+  <section class="interest-card card" aria-labelledby="interest-title">
+    <p class="eyebrow">Willkommen bei Curio</p>
+    <h1 id="interest-title">Was interessiert dich?</h1>
     <p class="description">
       Wähle deine Lieblingsthemen. Wir passen deinen Feed daran an.
     </p>
 
-    <div class="interest-options">
+    <div class="chip-group" role="group" aria-labelledby="interest-title">
       @for (category of categories; track category) {
         <button
           type="button"
-          [class.active]="selectedInterests.includes(category)"
-          [attr.aria-pressed]="selectedInterests.includes(category)"
+          class="chip"
+          [attr.aria-pressed]="selectedInterests().includes(category)"
+          [disabled]="loading()"
           (click)="toggleInterest(category)"
         >
-          {{ selectedInterests.includes(category) ? '✓ ' : '' }}{{ category }}
+          @if (selectedInterests().includes(category)) {
+            <span aria-hidden="true">✓ </span>
+          }
+          {{ category }}
         </button>
       }
     </div>
 
-    @if (message) {
-      <p class="message" role="alert">{{ message }}</p>
+    @if (message()) {
+      <p class="status-message is-error" role="alert">{{ message() }}</p>
     }
 
     <button
-      class="save-button"
+      class="btn btn-primary btn-block"
       type="button"
-      [disabled]="loading"
+      [disabled]="loading()"
+      [attr.aria-busy]="loading()"
       (click)="save()"
     >
-      {{ loading ? 'Wird gespeichert ...' : 'Weiter zu Curio' }}
+      {{ loading() ? 'Wird gespeichert …' : 'Weiter zu Curio' }}
     </button>
   </section>
 </main>

@@ -63,15 +63,18 @@ export class AuthService {
     }
   }
 
+  /**
+   * Liefert den angemeldeten Benutzer aus der lokal gespeicherten Sitzung.
+   * Das braucht keine Netzwerkanfrage; abgelaufene Tokens erneuert Supabase
+   * automatisch. Der eigentliche Datenschutz erfolgt über Row Level Security.
+   */
   async getCurrentUser() {
-    const { data, error } = await this.withTimeout(
-      supabase.auth.getUser()
-    );
+    const { data, error } = await supabase.auth.getSession();
 
     if (error) {
       throw error;
     }
 
-    return data.user;
+    return data.session?.user ?? null;
   }
 }

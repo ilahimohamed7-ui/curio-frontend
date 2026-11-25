@@ -1,58 +1,69 @@
-
 <main class="auth-page">
-  <section class="auth-card">
-    <a class="brand" href="/">curio<span>.</span></a>
+  <section class="auth-card card" aria-labelledby="auth-title">
+    <a class="brand" href="/" aria-label="Curio Startseite">curio<span aria-hidden="true">.</span></a>
 
-    <p class="eyebrow">DEINE WELT DES WISSENS</p>
+    <p class="eyebrow">Deine Welt des Wissens</p>
 
-    <h1>
-      {{ isLogin ? 'Schön, dass du da bist.' : 'Werde Teil von Curio.' }}
+    <h1 id="auth-title">
+      {{ isLogin() ? 'Schön, dass du da bist.' : 'Werde Teil von Curio.' }}
     </h1>
 
     <p class="subtitle">
-      {{ isLogin
+      {{ isLogin()
         ? 'Melde dich an und entdecke neues Wissen.'
         : 'Erstelle dein Konto und entdecke jeden Tag Neues.' }}
     </p>
 
-    <form (ngSubmit)="submit()">
-      <label for="email">E-Mail-Adresse</label>
-      <input
-        id="email"
-        type="email"
-        name="email"
-        [(ngModel)]="email"
-        autocomplete="email"
-        placeholder="name@beispiel.de"
-        required
-      />
+    <form (ngSubmit)="submit()" novalidate>
+      <div class="field">
+        <label for="email">E-Mail-Adresse</label>
+        <input
+          id="email"
+          class="input"
+          type="email"
+          name="email"
+          [(ngModel)]="email"
+          autocomplete="email"
+          inputmode="email"
+          placeholder="name@beispiel.de"
+          required
+        />
+      </div>
 
-      <label for="password">Passwort</label>
-      <input
-        id="password"
-        type="password"
-        name="password"
-        [(ngModel)]="password"
-        [attr.autocomplete]="isLogin ? 'current-password' : 'new-password'"
-        placeholder="Mindestens 8 Zeichen empfohlen"
-        minlength="8"
-        required
-      />
+      <div class="field">
+        <label for="password">Passwort</label>
+        <input
+          id="password"
+          class="input"
+          type="password"
+          name="password"
+          [(ngModel)]="password"
+          [attr.autocomplete]="isLogin() ? 'current-password' : 'new-password'"
+          placeholder="Mindestens 8 Zeichen"
+          minlength="8"
+          required
+        />
+      </div>
 
       <p
-        class="message"
-        [class.error]="isError"
-        [hidden]="!message"
-        aria-live="polite"
+        class="status-message"
+        [class.is-error]="isError()"
+        [hidden]="!message()"
+        [attr.role]="isError() ? 'alert' : 'status'"
       >
-        {{ message }}
+        {{ message() }}
       </p>
 
-      <button type="submit" [disabled]="loading">
+      <button
+        type="submit"
+        class="btn btn-primary btn-block"
+        [disabled]="loading()"
+        [attr.aria-busy]="loading()"
+      >
         {{
-          loading
-            ? 'Einen Moment ...'
-            : isLogin
+          loading()
+            ? 'Einen Moment …'
+            : isLogin()
               ? 'Anmelden'
               : 'Konto erstellen'
         }}
@@ -60,9 +71,9 @@
     </form>
 
     <p class="switch-mode">
-      {{ isLogin ? 'Noch kein Konto?' : 'Du hast schon ein Konto?' }}
-      <button type="button" class="text-button" (click)="toggleMode()">
-        {{ isLogin ? 'Registrieren' : 'Anmelden' }}
+      {{ isLogin() ? 'Noch kein Konto?' : 'Du hast schon ein Konto?' }}
+      <button type="button" class="btn-link" (click)="toggleMode()">
+        {{ isLogin() ? 'Registrieren' : 'Anmelden' }}
       </button>
     </p>
   </section>
