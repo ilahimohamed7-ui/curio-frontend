@@ -9,7 +9,11 @@ zu diesen Themen angezeigt – täglich neu erzeugt mit KI.
 **Live-Demo:** <https://ilahimohamed7-ui.github.io/curio-frontend/>
 **Architektur:** [docs/architecture.md](docs/architecture.md) · Entscheidungen in [docs/adr/](docs/adr/)
 
-> Screenshots folgen.
+![Feed mit täglich neuen, KI-generierten Beiträgen](docs/screenshots/feed.png)
+
+| Anmeldung | Interessen wählen |
+| --- | --- |
+| ![Login-Seite](docs/screenshots/login.png) | ![Auswahl der Interessen beim ersten Login](docs/screenshots/interessen.png) |
 
 ## Funktionen
 
