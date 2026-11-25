@@ -77,6 +77,24 @@ Die Supabase-Verbindung wird in `src/environments/environment.ts` konfiguriert
 (`supabaseUrl` und `supabasePublishableKey`). Der Publishable Key ist für den Einsatz im Browser
 vorgesehen; der Datenschutz erfolgt über Row Level Security in der Datenbank.
 
+### Datenbank einrichten
+
+Das komplette Datenbankschema liegt als Migrationen in `supabase/migrations/`.
+Für ein neues Supabase-Projekt die Dateien im **SQL Editor** in dieser Reihenfolge ausführen:
+
+| Datei                                           | Inhalt                                         |
+| ----------------------------------------------- | ---------------------------------------------- |
+| `20261020000000_initial_schema.sql`             | Tabellen `posts` und `user_interests`, RLS     |
+| `20261106000000_save_user_interests.sql`        | Funktion zum atomaren Speichern der Interessen |
+| `20261125000000_user_interests_constraints.sql` | Zugriffsregeln (Policies) für `user_interests` |
+| `supabase/seed.sql`                             | Beispiel-Beiträge (nur bei leerer Tabelle)     |
+
+Alle Skripte sind idempotent und können gefahrlos mehrfach ausgeführt werden.
+Alternativ mit der [Supabase CLI](https://supabase.com/docs/guides/cli): `supabase db push`.
+
+**Sicherheitsmodell:** Angemeldete Benutzer dürfen alle Beiträge lesen, aber keine schreiben.
+Interessen kann jeder Benutzer nur für sich selbst lesen und ändern.
+
 ## Skripte
 
 | Befehl          | Beschreibung                        |
@@ -90,7 +108,8 @@ vorgesehen; der Datenschutz erfolgt über Row Level Security in der Datenbank.
 
 - [x] Design-System mit CSS-Variablen und barrierefreien Fokus-Styles
 - [x] Umstellung auf Signals, OnPush, Resource-API und Reactive Forms
-- [ ] Vollständige Supabase-Migrationen inkl. Seed-Daten
+- [x] Vollständige Supabase-Migrationen inkl. Seed-Daten
+- [ ] KI-generierte Beiträge über eine Supabase Edge Function
 - [x] ESLint und Architekturregeln mit Sheriff
 - [ ] CI-Pipeline (GitHub Actions)
 - [ ] Deployment mit Live-Demo
