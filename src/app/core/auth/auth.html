@@ -1,0 +1,69 @@
+
+<main class="auth-page">
+  <section class="auth-card">
+    <a class="brand" href="/">curio<span>.</span></a>
+
+    <p class="eyebrow">DEINE WELT DES WISSENS</p>
+
+    <h1>
+      {{ isLogin ? 'Schön, dass du da bist.' : 'Werde Teil von Curio.' }}
+    </h1>
+
+    <p class="subtitle">
+      {{ isLogin
+        ? 'Melde dich an und entdecke neues Wissen.'
+        : 'Erstelle dein Konto und entdecke jeden Tag Neues.' }}
+    </p>
+
+    <form (ngSubmit)="submit()">
+      <label for="email">E-Mail-Adresse</label>
+      <input
+        id="email"
+        type="email"
+        name="email"
+        [(ngModel)]="email"
+        autocomplete="email"
+        placeholder="name@beispiel.de"
+        required
+      />
+
+      <label for="password">Passwort</label>
+      <input
+        id="password"
+        type="password"
+        name="password"
+        [(ngModel)]="password"
+        [attr.autocomplete]="isLogin ? 'current-password' : 'new-password'"
+        placeholder="Mindestens 8 Zeichen empfohlen"
+        minlength="8"
+        required
+      />
+
+      <p
+        class="message"
+        [class.error]="isError"
+        [hidden]="!message"
+        aria-live="polite"
+      >
+        {{ message }}
+      </p>
+
+      <button type="submit" [disabled]="loading">
+        {{
+          loading
+            ? 'Einen Moment ...'
+            : isLogin
+              ? 'Anmelden'
+              : 'Konto erstellen'
+        }}
+      </button>
+    </form>
+
+    <p class="switch-mode">
+      {{ isLogin ? 'Noch kein Konto?' : 'Du hast schon ein Konto?' }}
+      <button type="button" class="text-button" (click)="toggleMode()">
+        {{ isLogin ? 'Registrieren' : 'Anmelden' }}
+      </button>
+    </p>
+  </section>
+</main>

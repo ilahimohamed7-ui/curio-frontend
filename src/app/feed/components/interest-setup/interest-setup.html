@@ -1,0 +1,36 @@
+
+<main class="interest-page">
+  <section class="interest-card">
+    <p class="eyebrow">WILLKOMMEN BEI CURIO</p>
+    <h1>Was interessiert dich?</h1>
+    <p class="description">
+      Wähle deine Lieblingsthemen. Wir passen deinen Feed daran an.
+    </p>
+
+    <div class="interest-options">
+      @for (category of categories; track category) {
+        <button
+          type="button"
+          [class.active]="selectedInterests.includes(category)"
+          [attr.aria-pressed]="selectedInterests.includes(category)"
+          (click)="toggleInterest(category)"
+        >
+          {{ selectedInterests.includes(category) ? '✓ ' : '' }}{{ category }}
+        </button>
+      }
+    </div>
+
+    @if (message) {
+      <p class="message" role="alert">{{ message }}</p>
+    }
+
+    <button
+      class="save-button"
+      type="button"
+      [disabled]="loading"
+      (click)="save()"
+    >
+      {{ loading ? 'Wird gespeichert ...' : 'Weiter zu Curio' }}
+    </button>
+  </section>
+</main>

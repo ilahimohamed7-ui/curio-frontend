@@ -1,0 +1,97 @@
+<main class="feed-page">
+  <header class="feed-header">
+    <a class="brand" href="/home" aria-label="Curio Startseite">curio<span>.</span></a>
+    <button class="logout-button" type="button" (click)="logout()">
+      Abmelden
+    </button>
+  </header>
+
+  <section class="feed-intro" aria-labelledby="feed-title">
+    <p class="eyebrow">DEINE WELT DES WISSENS</p>
+    <h1 id="feed-title">Dein Feed. Dein Wissen.</h1>
+    <p>Entdecke neue Gedanken und spannende Fakten aus deinen Lieblingsthemen.</p>
+  </section>
+
+  <section class="interests-panel" aria-labelledby="interests-title">
+    <h2 id="interests-title">Deine Interessen</h2>
+    <p>Wähle aus, welche Themen du in deinem Feed entdecken möchtest.</p>
+
+    @if (interestsLoading) {
+      <p>Interessen werden geladen ...</p>
+    } @else {
+      <div class="interest-options">
+        @for (category of interestCategories; track category) {
+          <button
+            type="button"
+            [class.active]="selectedInterests.includes(category)"
+            [attr.aria-pressed]="selectedInterests.includes(category)"
+            [disabled]="interestsSaving"
+            (click)="toggleInterest(category)"
+          >
+            {{ selectedInterests.includes(category) ? '✓ ' : '' }}{{ category }}
+          </button>
+        }
+      </div>
+    }
+
+    @if (interestsSaving) {
+      <p>Interessen werden gespeichert ...</p>
+    }
+
+    @if (message) {
+      <p class="interests-message" role="status">{{ message }}</p>
+    }
+  </section>
+
+  <section class="posts-section" aria-labelledby="posts-title">
+    <div class="posts-heading">
+      <div>
+        <p class="eyebrow">FÜR DICH ENTDECKT</p>
+        <h2 id="posts-title">Wissens-Feed</h2>
+      </div>
+      <nav class="category-options" aria-label="Beiträge nach Kategorie filtern">
+        @for (category of categories; track category) {
+          <button
+            type="button"
+            [class.active]="selectedCategory === category"
+            [attr.aria-pressed]="selectedCategory === category"
+            (click)="selectCategory(category)"
+          >
+            {{ category }}
+          </button>
+        }
+      </nav>
+    </div>
+
+    @if (posts$ | async; as posts) {
+      @if (posts.length > 0) {
+        <div class="post-grid">
+          @for (post of posts; track post.id) {
+            <article
+              class="post-card"
+              [class.purple]="post.color === 'purple'"
+              [class.blue]="post.color === 'blue'"
+              [class.orange]="post.color === 'orange'"
+            >
+              <div class="post-card-top">
+                <span class="post-emoji" aria-hidden="true">{{ post.emoji }}</span>
+                <span class="post-category">{{ post.category }}</span>
+              </div>
+              <h3>{{ post.title }}</h3>
+              <p class="post-description">{{ post.description }}</p>
+              <footer class="post-meta">
+                <span class="post-source">{{ post.source }}</span>
+                <span class="post-engagement" aria-label="Reaktionen">
+                  <span aria-label="Gefällt-mir-Angaben">♥ {{ post.likes }}</span>
+                  <span aria-label="Kommentare">▢ {{ post.comments }}</span>
+                </span>
+              </footer>
+            </article>
+          }
+        </div>
+      } @else {
+        <p class="empty-state">Für diese Auswahl gibt es noch keine Beiträge.</p>
+      }
+    }
+  </section>
+</main>

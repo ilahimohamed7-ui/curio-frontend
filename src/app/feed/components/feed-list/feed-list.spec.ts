@@ -1,0 +1,138 @@
+import { TestBed } from '@angular/core/testing';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { of } from 'rxjs';
+
+import { FeedList } from './feed-list';
+import { PostRepository } from '../../data-access/post.repository';
+import { Post } from '../../models/post.model';
+import { AuthService } from '../../../core/auth/auth.service';
+import { InterestService } from '../../services/interest.service';
+import { Router } from '@angular/router';
+
+describe('FeedList', () => {
+  const samplePosts: Post[] = [
+    {
+      id: '1',
+      category: 'Wissenschaft',
+      title: 'Saturn könnte auf Wasser schwimmen',
+      description: 'Saturn hat eine geringere mittlere Dichte als Wasser.',
+      source: 'NASA',
+      emoji: '🪐',
+      likes: 248,
+      comments: 32,
+      color: 'purple'
+    },
+    {
+      id: '2',
+      category: 'Technologie',
+      title: 'Wie lernt künstliche Intelligenz?',
+      description: 'KI-Modelle lernen Muster aus Daten.',
+      source: 'Grundlagen des maschinellen Lernens',
+      emoji: '🤖',
+      likes: 312,
+      comments: 47,
+      color: 'orange'
+    },
+    {
+      id: '3',
+      category: 'Psychologie',
+      title: 'Warum liebt unser Gehirn Geschichten?',
+      description: 'Geschichten helfen, Informationen einzuordnen.',
+      source: 'Kognitionspsychologie',
+      emoji: '🧠',
+      likes: 186,
+      comments: 24,
+      color: 'blue'
+    }
+  ];
+
+  const mockRepository = {
+    getPosts: vi.fn(() => of(samplePosts)),
+    getPostsByCategory: vi.fn((category: string) =>
+      of(
+        category === 'Alle'
+          ? samplePosts
+          : samplePosts.filter(post => post.category === category)
+      )
+    )
+  };
+  const mockAuthService = { logout: vi.fn().mockResolvedValue(undefined) };
+  const mockInterestService = {
+    getInterests: vi.fn().mockResolvedValue([]),
+    saveInterests: vi.fn().mockResolvedValue(undefined)
+  };
+  const mockRouter = { navigate: vi.fn().mockResolvedValue(true) };
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+
+    await TestBed.configureTestingModule({
+      imports: [FeedList],
+      providers: [
+        { provide: PostRepository, useValue: mockRepository },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: InterestService, useValue: mockInterestService },
+        { provide: Router, useValue: mockRouter }
+      ]
+    }).compileComponents();
+  });
+
+  async function createFeed() {
+    const fixture = TestBed.createComponent(FeedList);
+    fixture.componentInstance.selectCategory('Alle');
+    fixture.detectChanges(false);
+    return fixture;
+  }
+
+  it('zeigt die Beiträge aus dem FeedService als Post-Cards an', async () => {
+    const fixture = await createFeed();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(mockRepository.getPostsByCategory).toHaveBeenCalledWith('Alle');
+    expect(compiled.querySelectorAll('.post-card')).toHaveLength(3);
+    expect(compiled.textContent).toContain('Saturn könnte auf Wasser schwimmen');
+    expect(compiled.textContent).toContain('Wie lernt künstliche Intelligenz?');
+  });
+
+  it('bietet alle vier Kategorien zur Auswahl an', async () => {
+    const fixture = await createFeed();
+    const buttons = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll(
+        '.category-options button'
+      )
+    ).map(button => button.textContent?.trim());
+
+    expect(buttons).toEqual([
+      'Alle',
+      'Wissenschaft',
+      'Technologie',
+      'Psychologie'
+    ]);
+  });
+
+  it('lädt beim Filtern die ausgewählte Kategorie über den FeedService', async () => {
+    const fixture = await createFeed();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const technologyButton = compiled.querySelector(
+      '.category-options button:nth-child(3)'
+    ) as HTMLButtonElement;
+
+    technologyButton.click();
+    fixture.detectChanges(false);
+
+    expect(mockRepository.getPostsByCategory).toHaveBeenCalledWith('Technologie');
+    expect(compiled.querySelectorAll('.post-card')).toHaveLength(1);
+    expect(compiled.textContent).toContain('Wie lernt künstliche Intelligenz?');
+  });
+
+  it('meldet über die vorhandene logout-Methode ab', async () => {
+    const fixture = await createFeed();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    (compiled.querySelector('.logout-button') as HTMLButtonElement).click();
+    await fixture.whenStable();
+
+    expect(mockAuthService.logout).toHaveBeenCalledOnce();
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
+  });
+});
