@@ -1,0 +1,27 @@
+@let p = post();
+
+<article class="post-card" [class]="p.color">
+  <div class="post-card-top">
+    <span class="post-emoji" aria-hidden="true">{{ p.emoji }}</span>
+    <span class="post-category">{{ p.category }}</span>
+  </div>
+
+  <h3>{{ p.title }}</h3>
+  <p class="post-description">{{ p.description }}</p>
+
+  <footer class="post-meta">
+    <span class="post-source">{{ p.source }}</span>
+    <span class="post-engagement">
+      <span>
+        <span aria-hidden="true">♥</span>
+        <span class="visually-hidden">Gefällt-mir-Angaben:</span>
+        {{ p.likes }}
+      </span>
+      <span>
+        <span aria-hidden="true">▢</span>
+        <span class="visually-hidden">Kommentare:</span>
+        {{ p.comments }}
+      </span>
+    </span>
+  </footer>
+</article>

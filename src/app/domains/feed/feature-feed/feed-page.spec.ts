@@ -7,7 +7,7 @@ import { PostRepository } from '../data/post.repository';
 import { Post } from '../data/post.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { InterestService } from '../data/interest.service';
-import { Router } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 
 describe('FeedPage', () => {
   const samplePosts: Post[] = [
@@ -57,11 +57,11 @@ describe('FeedPage', () => {
     )
   };
   const mockAuthService = { logout: vi.fn().mockResolvedValue(undefined) };
+  let navigateSpy: ReturnType<typeof vi.spyOn>;
   const mockInterestService = {
     getInterests: vi.fn().mockResolvedValue([]),
     saveInterests: vi.fn().mockResolvedValue(undefined)
   };
-  const mockRouter = { navigate: vi.fn().mockResolvedValue(true) };
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -72,9 +72,13 @@ describe('FeedPage', () => {
         { provide: PostRepository, useValue: mockRepository },
         { provide: AuthService, useValue: mockAuthService },
         { provide: InterestService, useValue: mockInterestService },
-        { provide: Router, useValue: mockRouter }
+        provideRouter([])
       ]
     }).compileComponents();
+
+    navigateSpy = vi
+      .spyOn(TestBed.inject(Router), 'navigate')
+      .mockResolvedValue(true);
   });
 
   async function createFeed() {
@@ -133,6 +137,6 @@ describe('FeedPage', () => {
     await fixture.whenStable();
 
     expect(mockAuthService.logout).toHaveBeenCalledOnce();
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
+    expect(navigateSpy).toHaveBeenCalledWith(['/login']);
   });
 });

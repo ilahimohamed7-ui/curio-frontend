@@ -1,6 +1,6 @@
 <main class="feed-page">
   <header class="feed-header">
-    <a class="brand" href="/home" aria-label="Curio Startseite">curio<span aria-hidden="true">.</span></a>
+    <a class="brand" routerLink="/home" aria-label="Curio Startseite">curio<span aria-hidden="true">.</span></a>
     <button class="chip logout-button" type="button" (click)="logout()">
       Abmelden
     </button>
@@ -19,22 +19,13 @@
     @if (interestsLoading()) {
       <p class="panel-hint" role="status">Interessen werden geladen …</p>
     } @else {
-      <div class="chip-group" role="group" aria-labelledby="interests-title">
-        @for (category of interestCategories; track category) {
-          <button
-            type="button"
-            class="chip"
-            [attr.aria-pressed]="selectedInterests().includes(category)"
-            [disabled]="interestsSaving()"
-            (click)="toggleInterest(category)"
-          >
-            @if (selectedInterests().includes(category)) {
-              <span aria-hidden="true">✓ </span>
-            }
-            {{ category }}
-          </button>
-        }
-      </div>
+      <app-interest-picker
+        [options]="interestCategories"
+        [selected]="selectedInterests()"
+        [disabled]="interestsSaving()"
+        labelledBy="interests-title"
+        (toggled)="toggleInterest($event)"
+      />
     }
 
     @if (interestsSaving()) {
@@ -46,58 +37,24 @@
     }
   </section>
 
-  <section class="posts-section" aria-labelledby="posts-title">
+  <section aria-labelledby="posts-title">
     <div class="posts-heading">
       <div>
         <p class="eyebrow">Für dich entdeckt</p>
         <h2 id="posts-title">Wissens-Feed</h2>
       </div>
-      <nav class="category-options chip-group" aria-label="Beiträge nach Kategorie filtern">
-        @for (category of categories; track category) {
-          <button
-            type="button"
-            class="chip"
-            [attr.aria-pressed]="selectedCategory() === category"
-            (click)="selectCategory(category)"
-          >
-            {{ category }}
-          </button>
-        }
-      </nav>
+      <app-category-filter
+        [options]="categories"
+        [selected]="selectedCategory()"
+        (selectedChange)="selectCategory($event)"
+      />
     </div>
 
     @if (posts$() | async; as posts) {
       @if (posts.length > 0) {
         <div class="post-grid">
           @for (post of posts; track post.id) {
-            <article
-              class="post-card"
-              [class.purple]="post.color === 'purple'"
-              [class.blue]="post.color === 'blue'"
-              [class.orange]="post.color === 'orange'"
-            >
-              <div class="post-card-top">
-                <span class="post-emoji" aria-hidden="true">{{ post.emoji }}</span>
-                <span class="post-category">{{ post.category }}</span>
-              </div>
-              <h3>{{ post.title }}</h3>
-              <p class="post-description">{{ post.description }}</p>
-              <footer class="post-meta">
-                <span class="post-source">{{ post.source }}</span>
-                <span class="post-engagement">
-                  <span>
-                    <span aria-hidden="true">♥</span>
-                    <span class="visually-hidden">Gefällt-mir-Angaben:</span>
-                    {{ post.likes }}
-                  </span>
-                  <span>
-                    <span aria-hidden="true">▢</span>
-                    <span class="visually-hidden">Kommentare:</span>
-                    {{ post.comments }}
-                  </span>
-                </span>
-              </footer>
-            </article>
+            <app-post-card [post]="post" />
           }
         </div>
       } @else if (postsError()) {

@@ -6,22 +6,14 @@
       Wähle deine Lieblingsthemen. Wir passen deinen Feed daran an.
     </p>
 
-    <div class="chip-group" role="group" aria-labelledby="interest-title">
-      @for (category of categories; track category) {
-        <button
-          type="button"
-          class="chip"
-          [attr.aria-pressed]="selectedInterests().includes(category)"
-          [disabled]="loading()"
-          (click)="toggleInterest(category)"
-        >
-          @if (selectedInterests().includes(category)) {
-            <span aria-hidden="true">✓ </span>
-          }
-          {{ category }}
-        </button>
-      }
-    </div>
+    <app-interest-picker
+      class="picker"
+      [options]="categories"
+      [selected]="selectedInterests()"
+      [disabled]="loading()"
+      labelledBy="interest-title"
+      (toggled)="toggleInterest($event)"
+    />
 
     @if (message()) {
       <p class="status-message is-error" role="alert">{{ message() }}</p>

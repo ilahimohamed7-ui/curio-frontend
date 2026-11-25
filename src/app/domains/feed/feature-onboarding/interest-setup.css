@@ -23,7 +23,7 @@ h1 {
   color: var(--color-text-muted);
 }
 
-.chip-group {
+.picker {
   margin-block: var(--space-6);
 }
 

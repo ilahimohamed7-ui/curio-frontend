@@ -6,8 +6,12 @@ import {
   signal
 } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Observable, catchError, map, of } from 'rxjs';
+
+import { CategoryFilter as CategoryFilterBar } from '../ui/category-filter/category-filter';
+import { InterestPicker } from '../ui/interest-picker/interest-picker';
+import { PostCard } from '../ui/post-card/post-card';
 
 import { FeedService } from '../data/feed.service';
 import { Post } from '../data/post.model';
@@ -20,12 +24,13 @@ import {
   ALL_CATEGORIES,
   CATEGORY_FILTERS,
   CategoryFilter,
-  INTEREST_CATEGORIES
+  INTEREST_CATEGORIES,
+  isInterestCategory
 } from '../data/category';
 
 @Component({
   selector: 'app-feed-page',
-  imports: [AsyncPipe],
+  imports: [AsyncPipe, RouterLink, CategoryFilterBar, InterestPicker, PostCard],
   templateUrl: './feed-page.html',
   styleUrl: './feed-page.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -107,7 +112,8 @@ export class FeedPage implements OnInit {
           category !== ALL_CATEGORIES || interests.length === 0
             ? posts
             : posts.filter(post =>
-                interests.includes(post.category as InterestCategory)
+                isInterestCategory(post.category) &&
+                interests.includes(post.category)
               )
         ),
         catchError(error => {

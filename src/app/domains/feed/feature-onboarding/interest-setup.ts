@@ -6,9 +6,11 @@ import {
   InterestService
 } from '../data/interest.service';
 import { INTEREST_CATEGORIES } from '../data/category';
+import { InterestPicker } from '../ui/interest-picker/interest-picker';
 
 @Component({
   selector: 'app-interest-setup',
+  imports: [InterestPicker],
   templateUrl: './interest-setup.html',
   styleUrl: './interest-setup.css',
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -39,7 +39,8 @@ src/app/
     └── feed/
         ├── feature-feed/        # Feed-Seite
         ├── feature-onboarding/  # Interessen-Auswahl nach dem ersten Login
-        └── data/                # Modelle, Repositories, Services
+        ├── ui/                  # PostCard, CategoryFilter, InterestPicker
+        └── data/                # Modelle, Repositories, Services, Kategorien
 supabase/
 └── migrations/                  # SQL-Migrationen
 ```
