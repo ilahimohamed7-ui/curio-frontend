@@ -2,35 +2,32 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnInit,
+  computed,
   inject,
   signal
 } from '@angular/core';
-import { AsyncPipe } from '@angular/common';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
-import { Observable, catchError, map, of } from 'rxjs';
 
-import { CategoryFilter as CategoryFilterBar } from '../ui/category-filter/category-filter';
-import { InterestPicker } from '../ui/interest-picker/interest-picker';
-import { PostCard } from '../ui/post-card/post-card';
-
-import { FeedService } from '../data/feed.service';
-import { Post } from '../data/post.model';
 import { AuthService } from '../../../core/auth/auth.service';
-import {
-  InterestCategory,
-  InterestService
-} from '../data/interest.service';
 import {
   ALL_CATEGORIES,
   CATEGORY_FILTERS,
   CategoryFilter,
   INTEREST_CATEGORIES,
+  InterestCategory,
   isInterestCategory
 } from '../data/category';
+import { FeedService } from '../data/feed.service';
+import { InterestService } from '../data/interest.service';
+import { Post } from '../data/post.model';
+import { CategoryFilter as CategoryFilterBar } from '../ui/category-filter/category-filter';
+import { InterestPicker } from '../ui/interest-picker/interest-picker';
+import { PostCard } from '../ui/post-card/post-card';
 
 @Component({
   selector: 'app-feed-page',
-  imports: [AsyncPipe, RouterLink, CategoryFilterBar, InterestPicker, PostCard],
+  imports: [RouterLink, CategoryFilterBar, InterestPicker, PostCard],
   templateUrl: './feed-page.html',
   styleUrl: './feed-page.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -43,14 +40,39 @@ export class FeedPage implements OnInit {
 
   readonly categories = CATEGORY_FILTERS;
   readonly interestCategories = INTEREST_CATEGORIES;
+  /** Anzahl der Platzhalter-Karten während des Ladens. */
+  readonly skeletons = [1, 2, 3];
 
-  readonly posts$ = signal<Observable<Post[]>>(of([]));
-  readonly postsError = signal(false);
   readonly selectedCategory = signal<CategoryFilter>(ALL_CATEGORIES);
   readonly selectedInterests = signal<InterestCategory[]>([]);
   readonly interestsLoading = signal(true);
   readonly interestsSaving = signal(false);
   readonly message = signal('');
+
+  /**
+   * Beiträge der gewählten Kategorie. Lädt automatisch neu, sobald sich
+   * `selectedCategory` ändert, und stellt Daten, Ladezustand und Fehler
+   * als Signals bereit.
+   */
+  readonly posts = rxResource({
+    params: () => this.selectedCategory(),
+    stream: ({ params: category }) =>
+      this.feedService.getPostsByCategory(category)
+  });
+
+  /** Bei "Alle" nur Beiträge aus den eigenen Interessen anzeigen. */
+  readonly visiblePosts = computed<Post[]>(() => {
+    const posts = this.posts.hasValue() ? this.posts.value() : [];
+    const interests = this.selectedInterests();
+
+    if (this.selectedCategory() !== ALL_CATEGORIES || interests.length === 0) {
+      return posts;
+    }
+
+    return posts.filter(
+      post => isInterestCategory(post.category) && interests.includes(post.category)
+    );
+  });
 
   async ngOnInit(): Promise<void> {
     try {
@@ -61,8 +83,6 @@ export class FeedPage implements OnInit {
     } finally {
       this.interestsLoading.set(false);
     }
-
-    this.loadPosts();
   }
 
   async toggleInterest(category: InterestCategory): Promise<void> {
@@ -77,7 +97,6 @@ export class FeedPage implements OnInit {
     try {
       await this.interestService.saveInterests(next);
       this.selectedInterests.set(next);
-      this.loadPosts();
     } catch (error) {
       console.error('Interessen konnten nicht gespeichert werden:', error);
       this.message.set('Deine Interessen konnten nicht gespeichert werden.');
@@ -88,7 +107,6 @@ export class FeedPage implements OnInit {
 
   selectCategory(category: CategoryFilter): void {
     this.selectedCategory.set(category);
-    this.loadPosts();
   }
 
   async logout(): Promise<void> {
@@ -99,29 +117,5 @@ export class FeedPage implements OnInit {
       console.error('Abmeldung fehlgeschlagen:', error);
       this.message.set('Abmelden ist fehlgeschlagen.');
     }
-  }
-
-  private loadPosts(): void {
-    const category = this.selectedCategory();
-    const interests = this.selectedInterests();
-
-    this.postsError.set(false);
-    this.posts$.set(
-      this.feedService.getPostsByCategory(category).pipe(
-        map(posts =>
-          category !== ALL_CATEGORIES || interests.length === 0
-            ? posts
-            : posts.filter(post =>
-                isInterestCategory(post.category) &&
-                interests.includes(post.category)
-              )
-        ),
-        catchError(error => {
-          console.error('Beiträge konnten nicht geladen werden:', error);
-          this.postsError.set(true);
-          return of([]);
-        })
-      )
-    );
   }
 }

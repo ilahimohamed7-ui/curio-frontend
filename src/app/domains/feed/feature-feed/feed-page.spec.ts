@@ -1,6 +1,6 @@
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { FeedPage } from './feed-page';
 import { PostRepository } from '../data/post.repository';
@@ -81,10 +81,16 @@ describe('FeedPage', () => {
       .mockResolvedValue(true);
   });
 
+  /** Rendert die Seite und wartet, bis Interessen und Beiträge geladen sind. */
+  async function render(fixture: ComponentFixture<FeedPage>) {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  }
+
   async function createFeed() {
     const fixture = TestBed.createComponent(FeedPage);
-    fixture.componentInstance.selectCategory('Alle');
-    fixture.detectChanges(false);
+    await render(fixture);
     return fixture;
   }
 
@@ -122,11 +128,35 @@ describe('FeedPage', () => {
     ) as HTMLButtonElement;
 
     technologyButton.click();
-    fixture.detectChanges(false);
+    await render(fixture);
 
     expect(mockRepository.getPostsByCategory).toHaveBeenCalledWith('Technologie');
     expect(compiled.querySelectorAll('.post-card')).toHaveLength(1);
     expect(compiled.textContent).toContain('Wie lernt künstliche Intelligenz?');
+  });
+
+  it('zeigt bei "Alle" nur Beiträge aus den eigenen Interessen', async () => {
+    mockInterestService.getInterests.mockResolvedValueOnce(['Psychologie']);
+
+    const fixture = await createFeed();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelectorAll('.post-card')).toHaveLength(1);
+    expect(compiled.textContent).toContain('Warum liebt unser Gehirn Geschichten?');
+  });
+
+  it('zeigt eine Fehlermeldung mit "Erneut versuchen", wenn das Laden scheitert', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockRepository.getPostsByCategory.mockReturnValueOnce(
+      throwError(() => new Error('Netzwerk'))
+    );
+
+    const fixture = await createFeed();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.textContent).toContain('Beiträge konnten nicht geladen werden.');
+    expect(compiled.querySelector('.retry-button')).toBeTruthy();
+    expect(compiled.querySelectorAll('.post-card')).toHaveLength(0);
   });
 
   it('meldet über die vorhandene logout-Methode ab', async () => {

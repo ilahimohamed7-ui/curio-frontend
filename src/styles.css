@@ -315,6 +315,15 @@ button:disabled {
   outline-offset: 1px;
 }
 
+.input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.field-error {
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+}
+
 /* Meldungen */
 .status-message {
   font-size: var(--text-sm);

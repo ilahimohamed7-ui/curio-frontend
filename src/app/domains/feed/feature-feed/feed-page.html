@@ -50,20 +50,34 @@
       />
     </div>
 
-    @if (posts$() | async; as posts) {
-      @if (posts.length > 0) {
-        <div class="post-grid">
-          @for (post of posts; track post.id) {
-            <app-post-card [post]="post" />
-          }
-        </div>
-      } @else if (postsError()) {
-        <p class="empty-state status-message is-error" role="alert">
-          Beiträge konnten nicht geladen werden. Bitte lade die Seite neu.
-        </p>
-      } @else {
-        <p class="empty-state">Für diese Auswahl gibt es noch keine Beiträge.</p>
-      }
+    @if (posts.isLoading()) {
+      <div class="post-grid" aria-busy="true">
+        <span class="visually-hidden" role="status">Beiträge werden geladen …</span>
+        @for (item of skeletons; track item) {
+          <div class="skeleton-card" aria-hidden="true">
+            <div class="skeleton skeleton-line short"></div>
+            <div class="skeleton skeleton-line title"></div>
+            <div class="skeleton skeleton-line"></div>
+            <div class="skeleton skeleton-line"></div>
+            <div class="skeleton skeleton-line medium"></div>
+          </div>
+        }
+      </div>
+    } @else if (posts.error()) {
+      <div class="empty-state" role="alert">
+        <p class="status-message is-error">Beiträge konnten nicht geladen werden.</p>
+        <button type="button" class="btn btn-primary retry-button" (click)="posts.reload()">
+          Erneut versuchen
+        </button>
+      </div>
+    } @else if (visiblePosts().length > 0) {
+      <div class="post-grid">
+        @for (post of visiblePosts(); track post.id) {
+          <app-post-card [post]="post" />
+        }
+      </div>
+    } @else {
+      <p class="empty-state">Für diese Auswahl gibt es noch keine Beiträge.</p>
     }
   </section>
 </main>

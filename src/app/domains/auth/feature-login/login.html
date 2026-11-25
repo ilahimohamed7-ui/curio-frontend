@@ -14,35 +14,42 @@
         : 'Erstelle dein Konto und entdecke jeden Tag Neues.' }}
     </p>
 
-    <form (ngSubmit)="submit()" novalidate>
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      @let emailMessage = emailError();
       <div class="field">
         <label for="email">E-Mail-Adresse</label>
         <input
           id="email"
           class="input"
           type="email"
-          name="email"
-          [(ngModel)]="email"
+          formControlName="email"
           autocomplete="email"
           inputmode="email"
           placeholder="name@beispiel.de"
-          required
+          [attr.aria-invalid]="emailMessage ? 'true' : null"
+          [attr.aria-describedby]="emailMessage ? 'email-error' : null"
         />
+        @if (emailMessage) {
+          <p id="email-error" class="field-error">{{ emailMessage }}</p>
+        }
       </div>
 
+      @let passwordMessage = passwordError();
       <div class="field">
         <label for="password">Passwort</label>
         <input
           id="password"
           class="input"
           type="password"
-          name="password"
-          [(ngModel)]="password"
+          formControlName="password"
           [attr.autocomplete]="isLogin() ? 'current-password' : 'new-password'"
-          placeholder="Mindestens 8 Zeichen"
-          minlength="8"
-          required
+          [attr.placeholder]="isLogin() ? 'Dein Passwort' : 'Mindestens ' + minPasswordLength + ' Zeichen'"
+          [attr.aria-invalid]="passwordMessage ? 'true' : null"
+          [attr.aria-describedby]="passwordMessage ? 'password-error' : null"
         />
+        @if (passwordMessage) {
+          <p id="password-error" class="field-error">{{ passwordMessage }}</p>
+        }
       </div>
 
       <p
